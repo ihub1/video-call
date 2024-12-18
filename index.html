@@ -293,6 +293,12 @@
           });
       }
     });
+
+    // Listen for ICE candidates from the caller
+    callRef.child(remoteUserId).child('callerCandidates').on('child_added', snapshot => {
+      const candidate = new RTCIceCandidate(snapshot.val());
+      peerConnection.addIceCandidate(candidate);
+    });
   }
 
   // Event listener for the call button
