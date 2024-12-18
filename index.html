@@ -12,46 +12,58 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      background-color: #f0f0f0;
-      flex-direction: column;
-      gap: 10px;
+      background-color: #f4f4f4; /* Light gray background */
+      font-family: sans-serif;
     }
 
     .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background-color: #fff; /* White container background */
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+      text-align: center;
     }
 
     video {
       width: 100%;
       max-width: 400px;
       height: auto;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd; /* Light gray border */
+      border-radius: 5px;
     }
 
     button {
+      background-color: #007bff; /* Blue button */
+      color: #fff;
       padding: 10px 20px;
-      font-size: 16px;
-      background-color: #4CAF50;
-      color: white;
       border: none;
+      border-radius: 5px;
       cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #0069d9; /* Darker blue on hover */
     }
 
     #userList {
       list-style: none;
       padding: 0;
       max-height: 200px;
-      /* Adjust as needed */
       overflow-y: auto;
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
     }
 
     #userList li {
       padding: 10px;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 1px solid #eee; /* Light gray separator */
       cursor: pointer;
+    }
+
+    #userList li:hover {
+      background-color: #f9f9f9; /* Light gray background on hover */
     }
 
     /* Modal styles */
@@ -69,10 +81,11 @@
     }
 
     .modal-content {
-      background-color: #fefefe;
+      background-color: #fff;
       margin: 5% auto;
       padding: 20px;
-      border: 1px solid #888;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       width: 80%;
       max-width: 400px;
     }
@@ -82,13 +95,13 @@
       float: right;
       font-size: 28px;
       font-weight: bold;
+      cursor: pointer;
     }
 
     .close:hover,
     .close:focus {
       color: black;
       text-decoration: none;
-      cursor: pointer;
     }
 
     /* Style for the tabs */
@@ -96,6 +109,7 @@
       overflow: hidden;
       border: 1px solid #ccc;
       background-color: #f1f1f1;
+      border-radius: 5px;
     }
 
     .tab button {
@@ -122,14 +136,25 @@
       padding: 6px 12px;
       border: 1px solid #ccc;
       border-top: none;
+      border-radius: 0 0 5px 5px;
     }
 
     #userIdDisplay {
-      /* Style for the user ID display */
       padding: 10px;
       background-color: #eee;
       border: 1px solid #ccc;
       margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    #remoteUserId {
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      border-radius: 5px;
     }
   </style>
 </head>
