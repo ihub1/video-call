@@ -1,64 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Video Call</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background-color: #f0f0f0;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        video {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-        }
-        
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Video Call</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f0f0f0;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    video {
+      width: 100%;
+      max-width: 400px;
+      height: auto;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #userList {
+      list-style: none;
+      padding: 0;
+      max-height: 200px;
+      /* Adjust as needed */
+      overflow-y: auto;
+    }
+
+    #userList li {
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+      cursor: pointer;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+      padding-top: 60px;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Style for the tabs */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 12px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
+
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    #userIdDisplay {
+      /* Style for the user ID display */
+      padding: 10px;
+      background-color: #eee;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-        <button id="callButton">Start Call</button>
-        <button id="hangupButton">Hang Up</button>
-    </div>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-    <script>
-        const localVideo = document.getElementById('localVideo');
-const remoteVideo = document.getElementById('remoteVideo');
-const callButton = document.getElementById('callButton');
-const hangupButton = document.getElementById('hangupButton'); // Add hangup button
 
-// Firebase configuration
-const firebaseConfig = {
+<div id="authModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+
+    <div class="tab">
+      <button class="tablinks" onclick="openTab(event, 'login')">Login</button>
+      <button class="tablinks" onclick="openTab(event, 'signup')">Sign Up</button>
+    </div>
+
+    <div id="login" class="tabcontent">
+      <input type="text" id="loginEmail" placeholder="Email"><br>
+      <input type="password" id="loginPassword" placeholder="Password"><br>
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="signup" class="tabcontent">
+      <input type="text" id="signupEmail" placeholder="Email"><br>
+      <input type="password" id="signupPassword" placeholder="Password"><br>
+      <button onclick="signup()">Sign Up</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="userIdDisplay"></div>
+  <video id="localVideo" autoplay muted></video>
+  <video id="remoteVideo" autoplay></video>
+  <ul id="userList"></ul>
+  <input type="text" id="remoteUserId" placeholder="Enter remote user ID"> 
+  <button id="callButton">Call</button>
+  <button id="hangupButton">Hang Up</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+<script>
+  const localVideo = document.getElementById('localVideo');
+  const remoteVideo = document.getElementById('remoteVideo');
+  const callButton = document.getElementById('callButton');
+  const hangupButton = document.getElementById('hangupButton');
+  const userIdDisplay = document.getElementById('userIdDisplay'); // Get the user ID display element
+
+  // Firebase configuration
+  const firebaseConfig = {
     apiKey: "AIzaSyB6C4lldmXfzJh-76hJS4NYnV6FAa9I5hE",
     authDomain: "lonyichat-2d82b.firebaseapp.com",
     databaseURL: "https://lonyichat-2d82b-default-rtdb.firebaseio.com",
@@ -67,138 +188,243 @@ const firebaseConfig = {
     messagingSenderId: "925529919968",
     appId: "1:925529919968:web:48673ceb273d4bc15d9b85",
     measurementId: "G-J3Y65DK02S"
-};
+  };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const callRef = database.ref('calls');
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const database = firebase.database();
+  const callRef = database.ref('calls');
+  const usersRef = database.ref('users');
 
-let peerConnection;
-let localStream;
-let callInProgress = false; // Flag to track call status
+  let peerConnection;
+  let localStream;
+  let callInProgress = false; // Flag to track call status
 
-// Function to get user media (camera and microphone)
-async function getMedia() {
+  // Function to get user media (camera and microphone)
+  async function getMedia() {
     try {
-        localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
-        localVideo.srcObject = localStream;
+      localStream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+      localVideo.srcObject = localStream;
     } catch (error) {
-        console.error('Error accessing media devices:', error);
+      console.error('Error accessing media devices:', error);
     }
-}
+  }
 
-// Function to create the peer connection and handle ICE candidates
-async function createPeerConnection() {
+  // Function to create the peer connection and handle ICE candidates
+  async function createPeerConnection(remoteUserId) {
     peerConnection = new RTCPeerConnection();
 
     localStream.getTracks().forEach(track => {
-        peerConnection.addTrack(track, localStream);
+      peerConnection.addTrack(track, localStream);
     });
 
     peerConnection.ontrack = event => {
-        remoteVideo.srcObject = event.streams[0];
+      remoteVideo.srcObject = event.streams[0];
     };
 
     peerConnection.onicecandidate = event => {
-        if (event.candidate) {
-            callRef.child('callerCandidates').push(event.candidate.toJSON());
-        }
+      if (event.candidate) {
+        callRef.child(auth.currentUser.uid).child('callerCandidates').push(event.candidate.toJSON());
+      }
     };
 
-    callRef.child('calleeCandidates').on('child_added', snapshot => {
-        const candidate = new RTCIceCandidate(snapshot.val());
-        peerConnection.addIceCandidate(candidate);
+    callRef.child(remoteUserId).child('calleeCandidates').on('child_added', snapshot => {
+      const candidate = new RTCIceCandidate(snapshot.val());
+      peerConnection.addIceCandidate(candidate);
     });
-}
+  }
 
-// Function to initiate the call (caller)
-async function makeCall() {
-    if (callInProgress) return; // Prevent multiple calls
+  // Function to initiate the call (caller)
+  async function makeCall(remoteUserId) {
+    if (callInProgress) return;
 
     callInProgress = true;
     callButton.disabled = true;
     hangupButton.disabled = false;
 
     await getMedia();
-    await createPeerConnection();
+    await createPeerConnection(remoteUserId);
 
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
-    callRef.set({offer});
+    callRef.child(remoteUserId).set({offer});
 
-    callRef.on('value', snapshot => {
-        const data = snapshot.val();
-        if (data?.answer) {
-            const answer = new RTCSessionDescription(data.answer);
-            peerConnection.setRemoteDescription(answer);
-        }
+    callRef.child(remoteUserId).on('value', snapshot => {
+      const data = snapshot.val();
+      if (data?.answer) {
+        const answer = new RTCSessionDescription(data.answer);
+        peerConnection.setRemoteDescription(answer);
+      }
     });
-}
+  }
 
-// Function to answer the call (callee)
-async function answerCall() {
-    if (callInProgress) return; // Prevent multiple calls
+  // Function to answer the call (callee)
+  async function answerCall(remoteUserId) {
+    if (callInProgress) return;
 
     callInProgress = true;
     callButton.disabled = true;
     hangupButton.disabled = false;
 
     await getMedia();
-    await createPeerConnection();
+    await createPeerConnection(remoteUserId);
 
-    callRef.once('value', snapshot => {
-        const data = snapshot.val();
-        if (data?.offer) {
-            const offer = new RTCSessionDescription(data.offer);
-            peerConnection.setRemoteDescription(offer);
-
-            peerConnection.createAnswer()
-                .then(answer => peerConnection.setLocalDescription(answer))
-                .then(() => callRef.update({answer}));
-        }
+    callRef.child(remoteUserId).once('value', snapshot => {
+      const data = snapshot.val();
+      if (data?.offer) {
+        const offer = new RTCSessionDescription(data.offer);
+        peerConnection.setRemoteDescription(offer)
+          .then(() => peerConnection.createAnswer())
+          .then(answer => peerConnection.setLocalDescription(answer))
+          .then(() => {
+            const answerData = {answer: peerConnection.localDescription.toJSON()};
+            callRef.child(remoteUserId).update(answerData);
+          })
+          .catch(error => {
+            console.error('Error answering call:', error);
+          });
+      }
     });
-}
+  }
 
-// Event listener for the call button (modified to toggle between call/answer)
-callButton.addEventListener('click', () => {
-    if (!callInProgress) {
-        // For simplicity, we'll assume the user is always the caller
-        makeCall();
-        // In a real application, you'd need logic to determine whether to make or answer
+  // Event listener for the call button
+  callButton.addEventListener('click', () => {
+    const remoteUserId = document.getElementById('remoteUserId').value; // Get the ID from the input field
+    if (remoteUserId) {
+      makeCall(remoteUserId);
+    } else {
+      alert('Please enter a remote user ID.');
     }
-});
+  });
 
-// Function to hang up the call
-function hangUpCall() {
+
+  // Function to hang up the call
+  function hangUpCall() {
     if (!callInProgress) return;
 
     callInProgress = false;
     callButton.disabled = false;
     hangupButton.disabled = true;
 
-    // Close the peer connection
     if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
+      peerConnection.close();
+      peerConnection = null;
     }
 
-    // Stop media tracks
     if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
+      localStream.getTracks().forEach(track => track.stop());
+      localStream = null;
     }
 
-    // Clear Firebase data (optional)
-    callRef.remove();
-
-    // Reset video elements
     localVideo.srcObject = null;
     remoteVideo.srcObject = null;
-}
+  }
 
-// Event listener for the hangup button
-hangupButton.addEventListener('click', hangUpCall);
-    </script>
+  // Event listener for the hangup button
+  hangupButton.addEventListener('click', hangUpCall);
+
+  // Function to update user presence
+  function updateUserPresence(userId, isOnline) {
+    usersRef.child(userId).update({online: isOnline});
+  }
+
+  // Function to fetch online users and update the UI
+  function getOnlineUsers() {
+    const userList = document.getElementById('userList');
+    userList.innerHTML = '';
+
+    usersRef.on('value', snapshot => {
+      const users = snapshot.val() || {};
+      Object.entries(users)
+        .filter(([userId, userData]) => userId !== auth.currentUser.uid && userData.online)
+        .forEach(([userId]) => {
+          const li = document.createElement('li');
+          li.textContent = userId;
+          li.addEventListener('click', () => {
+            const remoteUserId = userId;
+            if (remoteUserId) {
+              makeCall(remoteUserId);
+            } else {
+              alert('Please enter a remote user ID.');
+            }
+          });
+          userList.appendChild(li);
+        });
+    });
+  }
+
+  // Modal handling
+  const modal = document.getElementById("authModal");
+  const span = document.getElementsByClassName("close")[0];
+
+  span.onclick = function () {
+    modal.style.display = "none";
+  }
+
+  window.onclick = function (event) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  }
+
+  function openTab(evt, tabName) {
+    let i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+      tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
+  }
+
+  // Login function
+  function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        modal.style.display = "none";
+      })
+      .catch(error => {
+        console.error('Error logging in:', error);
+      });
+  }
+
+  // Signup function
+  function signup() {
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        const user = userCredential.user;
+        return database.ref('users/' + user.uid).set({
+          id: user.uid
+        });
+      })
+      .then(() => {
+        modal.style.display = "none";
+      })
+      .catch(error => {
+        console.error('Error signing up:', error);
+      });
+  }
+
+  // Authentication state listener
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      userIdDisplay.textContent = "Your ID: " + user.uid; // Display the user ID
+      getOnlineUsers();
+    } else {
+      userIdDisplay.textContent = ""; // Clear the user ID display
+      modal.style.display = "block";
+    }
+  });
+
+</script>
 </body>
 </html>
