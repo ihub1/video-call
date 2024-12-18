@@ -225,10 +225,12 @@
 
     peerConnection.onicecandidate = event => {
       if (event.candidate) {
-        callRef.child(auth.currentUser.uid).child('callerCandidates').push(event.candidate.toJSON());
+        // Store ICE candidates under the caller's node
+        callRef.child(auth.currentUser.uid).child('callerCandidates').push(event.candidate.toJSON()); 
       }
     };
 
+    // Listen for ICE candidates from the remote user (callee)
     callRef.child(remoteUserId).child('calleeCandidates').on('child_added', snapshot => {
       const candidate = new RTCIceCandidate(snapshot.val());
       peerConnection.addIceCandidate(candidate);
@@ -248,9 +250,12 @@
 
     const offer = await peerConnection.createOffer();
     await peerConnection.setLocalDescription(offer);
-    callRef.child(remoteUserId).set({offer});
 
-    callRef.child(remoteUserId).on('value', snapshot => {
+    // Store the offer in the caller's node (corrected)
+    callRef.child(auth.currentUser.uid).set({ offer: offer.toJSON() }); 
+
+    // Listen for the answer in the caller's node
+    callRef.child(auth.currentUser.uid).on('value', snapshot => {
       const data = snapshot.val();
       if (data?.answer) {
         const answer = new RTCSessionDescription(data.answer);
@@ -270,6 +275,7 @@
     await getMedia();
     await createPeerConnection(remoteUserId);
 
+    // Get the offer from the caller's node
     callRef.child(remoteUserId).once('value', snapshot => {
       const data = snapshot.val();
       if (data?.offer) {
@@ -278,7 +284,8 @@
           .then(() => peerConnection.createAnswer())
           .then(answer => peerConnection.setLocalDescription(answer))
           .then(() => {
-            const answerData = {answer: peerConnection.localDescription.toJSON()};
+            // Store the answer in the caller's node
+            const answerData = { answer: peerConnection.localDescription.toJSON() };
             callRef.child(remoteUserId).update(answerData);
           })
           .catch(error => {
@@ -419,6 +426,18 @@
     if (user) {
       userIdDisplay.textContent = "Your ID: " + user.uid; // Display the user ID
       getOnlineUsers();
+
+      // Listen for incoming calls
+      callRef.child(user.uid).on('value', snapshot => {
+        const data = snapshot.val();
+        if (data?.offer && !callInProgress) {
+          // Notify the user of an incoming call
+          if (confirm(`Incoming call from ${data.offer.sdp.split(' ')[2]}. Accept?`)) {
+            answerCall(data.offer.sdp.split(' ')[2]);
+          }
+        }
+      });
+
     } else {
       userIdDisplay.textContent = ""; // Clear the user ID display
       modal.style.display = "block";
